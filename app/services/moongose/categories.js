@@ -1,38 +1,41 @@
-const categories = require('../../api/v1/categories/model')
-const { notFound, badRequest } = require('../../errors')
+const categories = require("../../api/v1/categories/model");
+const { notFound, badRequest } = require("../../errors");
 
 const getAllCategories = async (req) => {
-  const result = await categories.find({ organizer: req.user.organizer })
+  const result = await categories.find({ organizer: req.user.organizer });
 
-  return result
-}
+  return result;
+};
 
 const createCategory = async (req) => {
-  const { name } = req.body
+  const { name } = req.body;
 
-  const check = await categories.findOne({ name })
+  const check = await categories.findOne({
+    name,
+    organizer: req.user.organizer,
+  });
 
-  if (check) throw new badRequest('Kategori nama duplikat')
+  if (check) throw new badRequest("Kategori nama duplikat");
 
   const result = await categories.create({
     name,
-    organizer: req.user.organizer
-  })
+    organizer: req.user.organizer,
+  });
 
-  return result
-}
+  return result;
+};
 
 const getOneCategory = async (req) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   const result = await categories.findById({
     _id: id,
-    organizer: req.user.organizer
-  })
-  if (!result) throw new notFound(`Tidak ada kategori dengan id: ${id}`)
+    organizer: req.user.organizer,
+  });
+  if (!result) throw new notFound(`Tidak ada kategori dengan id: ${id}`);
 
-  return result
-}
+  return result;
+};
 
 const updateCategory = async (req) => {
   const { id } = req.params;
@@ -44,7 +47,7 @@ const updateCategory = async (req) => {
     _id: { $ne: id },
   });
 
-  if (check) throw new badRequest('kategori nama duplikat');
+  if (check) throw new badRequest("kategori nama duplikat");
 
   const result = await categories.findOneAndUpdate(
     { _id: id },
@@ -55,22 +58,22 @@ const updateCategory = async (req) => {
   if (!result) throw new notFound(`Tidak ada Kategori dengan id :  ${id}`);
 
   return result;
-}
+};
 
 const deleteCategory = async (req) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   const result = await categories.findById({
     _id: id,
-    organizer: req.user.organizer
-  })
+    organizer: req.user.organizer,
+  });
 
-  if (!result) throw new notFound('Id kategori tidak ditemukan')
+  if (!result) throw new notFound("Id kategori tidak ditemukan");
 
-  await result.remove()
+  await result.remove();
 
-  return result
-}
+  return result;
+};
 
 const checkingCategories = async (id) => {
   const result = await categories.findOne({
@@ -88,5 +91,5 @@ module.exports = {
   getOneCategory,
   updateCategory,
   deleteCategory,
-  checkingCategories
-}
+  checkingCategories,
+};

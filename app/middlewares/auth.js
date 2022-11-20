@@ -1,5 +1,5 @@
-const { unauthenticated, unauthorized } = require('../errors')
-const { isTokenValid } = require('../utils/jwt')
+const { unauthenticated, unauthorized } = require("../errors");
+const { tokenIsValid } = require("../utils/jwt");
 
 const authenticateUser = async (req, res, next) => {
   try {
@@ -7,15 +7,15 @@ const authenticateUser = async (req, res, next) => {
 
     const authHeader = req.headers.authorization;
 
-    if (authHeader && authHeader.startsWith('Bearer')) {
-      token = authHeader.split(' ')[1];
+    if (authHeader && authHeader.startsWith("Bearer")) {
+      token = authHeader.split(" ")[1];
     }
 
     if (!token) {
-      throw new unauthenticated('Authentication invalid');
+      throw new unauthenticated("Authentication invalid");
     }
 
-    const payload = isTokenValid({ token });
+    const payload = tokenIsValid({ token });
 
     req.user = {
       email: payload.email,
@@ -34,10 +34,10 @@ const authenticateUser = async (req, res, next) => {
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      throw new unauthorized('Unauthorized to access this route');
+      throw new unauthorized("Unauthorized to access this route");
     }
     next();
   };
 };
 
-module.exports = { authenticateUser, authorizeRoles }
+module.exports = { authenticateUser, authorizeRoles };

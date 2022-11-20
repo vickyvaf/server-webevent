@@ -1,93 +1,113 @@
-const talents = require('../../api/v1/talents/model')
-const { checkingImage } = require('./images')
-const { badRequest, notFound } = require('../../errors')
+const talents = require("../../api/v1/talents/model");
+const { checkingImages } = require("./images");
+const { badRequest, notFound } = require("../../errors");
 
 const getAlltalents = async (req) => {
-  const { keyword } = req.query
+  const { keyword } = req.query;
 
-  let condition = {}
+  let condition = {
+    organizer: req.user.organizer,
+  };
 
   if (keyword) {
-    condition = { ...condition, name: { $regex: keyword, $options: 'i' } }
+    condition = { ...condition, name: { $regex: keyword, $options: "i" } };
   }
 
-  const result = await talents.find(condition)
+  const result = await talents
+    .find(condition)
     .populate({
-      path: 'image',
-      select: '_id name'
+      path: "image",
+      select: "_id name",
     })
-    .select('_id name role image')
+    .select("_id name role image");
 
-  return result
-}
+  return result;
+};
 
 const createTalent = async (req) => {
-  const { name, role, image } = req.body
+  const { name, role, image } = req.body;
 
-  await checkingImage(image)
+  await checkingImages(image);
 
-  const check = await talents.findOne({ name })
+  const check = await talents.findOne({ name, organizer: req.user.organizer });
 
-  if (check) throw new badRequest('Pembicara sudah ada')
+  if (check) throw new badRequest("Pembicara sudah ada");
 
-  const result = await talents.create({ name, role, image })
+  const result = await talents.create({
+    name,
+    role,
+    image,
+    organizer: req.user.organizer,
+  });
 
-  return result
-}
+  return result;
+};
 
 const getOneTalent = async (req) => {
-  const { id } = req.params
+  const { id } = req.params;
 
-  const result = await talents.findOne({ _id: id })
+  const result = await talents
+    .findOne({ _id: id, organizer: req.user.organizer })
     .populate({
-      path: 'image',
-      select: '_id name '
+      path: "image",
+      select: "_id name ",
     })
-    .select('_id name')
+    .select("_id name");
 
-  if (!result) throw new notFound(`Tidak ada pembicara dengan id ${id}`)
+  if (!result) throw new notFound(`Tidak ada pembicara dengan id ${id}`);
 
-  return result
-}
+  return result;
+};
 
 const updateTalent = async (req) => {
-  const { id } = req.params
-  const { name, role, image } = req.body
+  const { id } = req.params;
+  const { name, role, image } = req.body;
 
-  await checkingImage(image)
+  await checkingImages(image);
 
   const check = await talents.findOne({
     name,
-    _id: { $ne: id }
-  })
-  if (check) throw new badRequest('Pembicara sudah ada')
+    organizer: req.user.organizer,
+    _id: { $ne: id },
+  });
+  if (check) throw new badRequest("Pembicara sudah ada");
 
   const result = await talents.findOneAndUpdate(
     { _id: id },
-    { name, role, image },
+    { name, role, image, organizer: req.user.organizer },
     { new: true, runValidators: true }
-  )
-  if (!result) throw new notFound(`Tidak ada pembicara dengan id ${id}`)
+  );
+  if (!result) throw new notFound(`Tidak ada pembicara dengan id ${id}`);
 
-  return result
-}
+  return result;
+};
 
 const deleteTalent = async (req) => {
-  const { id } = req.params
+  const { id } = req.params;
 
-  const result = await talents.findOne({ _id: id })
-  if (!result) throw new notFound(`Tidak ada pembiacara dengan id ${id}`)
+  const result = await talents.findOne({
+    _id: id,
+    organizer: req.user.organizer,
+  });
+  if (!result) throw new notFound(`Tidak ada pembiacara dengan id ${id}`);
 
-  await result.remove()
+  await result.remove();
 
-  return result
-}
+  return result;
+};
 
 const checkingTalents = async (id) => {
-  const result = await talents({ _id: id })
-  if (!result) throw new notFound(`Tidak ada pembicara dengan id ${id}`)
+  const result = await talents({ _id: id });
+  if (!result) throw new notFound(`Tidak ada pembicara dengan id ${id}`);
 
-  return result
-}
+  return result;
+};
 
-module.exports = { getAlltalents, createTalent, getOneTalent, updateTalent, deleteTalent, checkingTalents }
+module.exports = {
+  getAlltalents,
+  createTalent,
+  getOneTalent,
+  updateTalent,
+  deleteTalent,
+  checkingTalents,
+};

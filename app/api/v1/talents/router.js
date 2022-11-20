@@ -1,12 +1,12 @@
 const express = require('express')
 const { create, destroy, find, index, update } = require('./controller')
-
+const { authenticateUser, authorizeRoles } = require('../../../middlewares/auth')
 const router = express()
 
-router.get('/talents', index)
-router.get('/talents/:id', find)
-router.post('/talents', create)
-router.put('/talents/:id', update)
-router.delete('/talents/:id', destroy)
+router.get('/talents', authenticateUser, authorizeRoles('organizer'), index)
+router.get('/talents/:id', authenticateUser, authorizeRoles('organizer'), find)
+router.post('/talents', authenticateUser, authorizeRoles('organizer'), create)
+router.put('/talents/:id', authenticateUser, authorizeRoles('organizer'), update)
+router.delete('/talents/:id', authenticateUser, authorizeRoles('organizer'), destroy)
 
 module.exports = router
